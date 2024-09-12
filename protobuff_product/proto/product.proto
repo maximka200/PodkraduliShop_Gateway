@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package product;
+
+option go_package = "./productv1";
+
+service Product {
+    rpc NewProduct (NewProductRequest) returns (NewProductResponse);
+    rpc DeleteProduct (DeleteProductRequest) returns (DeleteProductResponse);
+    rpc GetProduct (GetProductRequest) returns (GetProductResponse);
+}
+
+message NewProductRequest {
+    string imageURL = 1;
+    string title = 2;
+    string description = 3;
+    int64 price = 4;
+    int32 currency = 5;  // unmarshal in Unicode
+    uint32 discount = 6;
+    string productURL = 7;
+}
+
+message DeleteProductRequest {
+    int64 id = 1;
+}
+
+message GetProductRequest {
+    int64 id = 1;
+}
+
+message NewProductResponse {
+    int64 id = 1;
+}
+
+message DeleteProductResponse {
+    bool isDelete = 1;
+}
+
+message GetProductResponse {
+    int64 id = 1;
+    string imageURL = 2;
+    string title = 3;
+    string description = 4;
+    int64 price = 5;
+    int32 currency = 6;  // unmarshal in Unicode
+    uint32 discount = 7;
+    string productURL = 8;
+}

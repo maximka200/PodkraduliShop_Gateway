@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"geteway/internal/client/product"
 	"geteway/internal/config"
 	"geteway/internal/server/handlers"
 	"geteway/internal/server/server"
@@ -21,8 +22,19 @@ func main() {
 	// run server
 	serv := new(server.Server)
 	log.Info(fmt.Sprintf("server run, port: %s", cfg.Port))
+	// init grpc client
+	ctx, cancel := context.WithTimeout(context.Background(), cfg.GRPC.Timeout)
+	defer cancel()
+
+	grpc, err := product.NewClient(log, cfg.GRPC.Addr, cfg.GRPC.Timeout, cfg.RetryCount)
+	if err != nil {
+		log.Error(fmt.Sprintf("cannot run grpc client: %s", err))
+		panic("cannot create grpc client")
+	}
+
+	var grpcClient handlers.ClientMethods = grpc
 	// init handler
-	handler := handlers.NewHandler(log)
+	handler := handlers.NewHandler(log, grpcClient, ctx)
 	go func() {
 		if err := serv.Run(cfg, handler.InitRouter()); err != nil {
 			log.Error(fmt.Sprintf("cannot run server: %s", err))
@@ -34,12 +46,8 @@ func main() {
 	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT)
 	<-stop
 
-	ctx, err := context.WithTimeout(context.Background(), cfg.Timeout)
-	if err != nil {
-		if err := serv.Shutdown(context.Background()); err != nil {
-			log.Error(fmt.Sprintf("an error occurred while executing graceful shutdown: %s", err))
-		}
-	}
+	ctx, cancel = context.WithTimeout(context.Background(), cfg.Timeout)
+	defer cancel()
 
 	if err := serv.Shutdown(ctx); err != nil {
 		log.Error(fmt.Sprintf("an error occurred while executing graceful shutdown: %s", err))

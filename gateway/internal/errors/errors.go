@@ -1,4 +1,4 @@
-package errorsGeteway
+package errorgeteway
 
 var (
 	ErrInvalidCredentials = "invalid credentials"

@@ -16,8 +16,9 @@ type Config struct {
 }
 
 type GRPC struct {
-	Port    string        `mapstructure:"port"`
-	Timeout time.Duration `mapstructure:"timeout"`
+	Addr       string        `mapstructure:"addr"`
+	Timeout    time.Duration `mapstructure:"timeout"`
+	RetryCount int           `mapstructure:"retryCount"`
 }
 
 func MustReadConfig() Config {

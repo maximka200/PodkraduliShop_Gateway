@@ -1,25 +1,32 @@
 package handlers
 
 import (
+	"context"
 	"log/slog"
 
 	"github.com/gin-gonic/gin"
 )
 
 type Handler struct {
-	str string
-	log *slog.Logger
+	grpc ClientMethods
+	log  *slog.Logger
+	ctx  context.Context
 }
 
-func NewHandler(log *slog.Logger) *Handler {
-	return &Handler{"", log}
+func NewHandler(log *slog.Logger, clientMethods ClientMethods, ctx context.Context) *Handler {
+	return &Handler{clientMethods, log, ctx}
 }
 
 func (h *Handler) InitRouter() *gin.Engine {
 	engine := gin.Default()
 
-	engine.GET("/product/:id", h.GetProductById)
-	engine.GET("/products", h.GetProductsList)
+	product := engine.Group("/product")
+	{
+		product.GET("/productbyid/:id", h.GetProductById)
+		product.GET("/productlist", h.GetProductsList)
+		product.POST("/create", h.CreateNewProduct)
+		product.DELETE("/delete/:id", h.DeleteProduct)
+	}
 
 	return engine
 }

@@ -2,5 +2,6 @@ env: "local"
 port: "1808"
 timeout: 1h
 grpc:
-  port: "8080"
+  addr: "localhost:8080"
   timeout: 1h
+  retryCount: 3

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	errorsgeteway "geteway/internal/errors"
+	"geteway/internal/model"
 	"net/http"
 	"strconv"
 
@@ -23,7 +24,8 @@ type ClientMethods interface {
 type ProductMethods interface {
 	NewProduct(ctx context.Context, req *productv1.NewProductRequest) (*productv1.NewProductResponse, error)
 	DeleteProduct(ctx context.Context, req *productv1.DeleteProductRequest) (*productv1.DeleteProductResponse, error)
-	GetProduct(rctx context.Context, req *productv1.GetProductRequest) (*productv1.GetProductResponse, error)
+	GetProduct(ctx context.Context, req *productv1.GetProductRequest) (*productv1.GetProductResponse, error)
+	GetProducts(ctx context.Context, req *productv1.GetProductsRequest) (*productv1.GetProductsResponse, error)
 }
 
 func (h *Handler) GetProductById(c *gin.Context) {
@@ -43,7 +45,18 @@ func (h *Handler) GetProductById(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, resp)
+	getResp := model.GetProductResponse{
+		Id:          resp.Id,
+		ImageURL:    resp.ImageURL,
+		Title:       resp.Title,
+		Description: resp.Description,
+		Price:       resp.Price,
+		Currency:    string(resp.Currency),
+		Discount:    resp.Discount,
+		ProductURL:  resp.ProductURL,
+	}
+
+	c.JSON(http.StatusOK, getResp)
 }
 
 func (h *Handler) CreateNewProduct(c *gin.Context) {
@@ -62,7 +75,7 @@ func (h *Handler) CreateNewProduct(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, resp)
+	c.JSON(http.StatusOK, resp.GetId())
 }
 
 func (h *Handler) GetProductsList(c *gin.Context) {
@@ -74,8 +87,14 @@ func (h *Handler) GetProductsList(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	// message with service gRPC
-	c.JSON(http.StatusInternalServerError, "not implemented")
+
+	resp, err := h.grpc.GetProducts(h.ctx, &productv1.GetProductsRequest{Count: int64(req.PerPageCount)})
+	if err != nil {
+		h.log.Error(fmt.Sprintf("%s: %s", op, err))
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusInternalServerError, resp)
 }
 
 func (h *Handler) DeleteProduct(c *gin.Context) {
@@ -95,5 +114,7 @@ func (h *Handler) DeleteProduct(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, resp)
+	h.log.Info(fmt.Sprintf("%t", resp.IsDelete))
+
+	c.JSON(http.StatusOK, resp.IsDelete)
 }

@@ -15,6 +15,7 @@ import (
 
 type Client struct {
 	Api productv1.ProductClient
+	Log *slog.Logger
 }
 
 func NewClient(log *slog.Logger, addr string, timeout time.Duration, retryCount int) (*Client, error) {

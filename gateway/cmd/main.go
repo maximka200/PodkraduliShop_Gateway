@@ -22,16 +22,15 @@ func main() {
 	// run server
 	serv := new(server.Server)
 	log.Info(fmt.Sprintf("server run, port: %s", cfg.Port))
-	// init grpc client
+	// init context
 	ctx, cancel := context.WithTimeout(context.Background(), cfg.GRPC.Timeout)
 	defer cancel()
-
+	// init grpc client
 	grpc, err := product.NewClient(log, cfg.GRPC.Addr, cfg.GRPC.Timeout, cfg.RetryCount)
 	if err != nil {
 		log.Error(fmt.Sprintf("cannot run grpc client: %s", err))
 		panic("cannot create grpc client")
 	}
-
 	var grpcClient handlers.ClientMethods = grpc
 	// init handler
 	handler := handlers.NewHandler(log, grpcClient, ctx)
@@ -41,13 +40,10 @@ func main() {
 			panic("cannot run server")
 		}
 	}()
-
+	// shutdown
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT)
 	<-stop
-
-	ctx, cancel = context.WithTimeout(context.Background(), cfg.Timeout)
-	defer cancel()
 
 	if err := serv.Shutdown(ctx); err != nil {
 		log.Error(fmt.Sprintf("an error occurred while executing graceful shutdown: %s", err))

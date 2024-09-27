@@ -41,6 +41,7 @@ func (client *Client) GetProduct(ctx context.Context, req *productv1.GetProductR
 }
 
 func (client *Client) GetProducts(ctx context.Context, req *productv1.GetProductsRequest) (*productv1.GetProductsResponse, error) {
+	// return multiple values
 	const op = "product.GetProduct"
 
 	resp, err := client.Api.GetProducts(ctx, req)

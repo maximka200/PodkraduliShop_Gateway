@@ -32,7 +32,7 @@ func NewClient(log *slog.Logger, addr string, timeout time.Duration, retryCount 
 		log.Error("%s: %s", op, err)
 	}
 
-	return &Client{Api: productv1.NewProductClient(conn)}, nil
+	return &Client{Api: productv1.NewProductClient(conn)}, nil // insert logg if need (use InterceptorLogger)
 }
 
 // InterceptorLogger adapts slog logger to interceptor logger.

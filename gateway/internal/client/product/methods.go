@@ -40,8 +40,8 @@ func (client *Client) GetProduct(ctx context.Context, req *productv1.GetProductR
 	return resp, nil
 }
 
+// return multiple Product values
 func (client *Client) GetProducts(ctx context.Context, req *productv1.GetProductsRequest) (*productv1.GetProductsResponse, error) {
-	// return multiple values
 	const op = "product.GetProduct"
 
 	resp, err := client.Api.GetProducts(ctx, req)

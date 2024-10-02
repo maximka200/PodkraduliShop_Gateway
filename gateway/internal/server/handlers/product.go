@@ -5,7 +5,7 @@ import (
 	"fmt"
 	errorsgeteway "geteway/internal/errors"
 
-	// "geteway/internal/model"
+	"geteway/internal/model"
 	"net/http"
 	"strconv"
 
@@ -15,7 +15,7 @@ import (
 
 type MainPageReqParam struct {
 	Page         int `form:"page"`
-	PerPageCount int `form:"address"`
+	PerPageCount int `form:"pagePerCount"`
 }
 
 type ClientMethods interface {
@@ -58,8 +58,9 @@ func (h *Handler) GetProductById(c *gin.Context) {
 			ProductURL:  resp.ProductURL,
 		}
 	*/
+	result := h.giveProductModel(resp)
 
-	c.JSON(http.StatusOK, resp)
+	c.JSON(http.StatusOK, result)
 }
 
 func (h *Handler) CreateNewProduct(c *gin.Context) {
@@ -67,8 +68,13 @@ func (h *Handler) CreateNewProduct(c *gin.Context) {
 
 	var product productv1.NewProductRequest
 	if err := c.BindJSON(&product); err != nil {
-		c.JSON(http.StatusBadRequest, errorsgeteway.ErrInternal)
+		c.JSON(http.StatusInternalServerError, errorsgeteway.ErrInternal)
 		return
+	}
+
+	if product.Title == "" || product.Description == "" || product.Price == 0 {
+		h.log.Error(fmt.Sprintf("%s: empty field", op))
+		c.JSON(http.StatusBadRequest, errorsgeteway.ErrInvalidCredentials)
 	}
 	// message with service gRPC
 	resp, err := h.grpc.NewProduct(h.ctx, &product)
@@ -91,13 +97,26 @@ func (h *Handler) GetProductsList(c *gin.Context) {
 		return
 	}
 
+	if req.Page == 0 || req.PerPageCount == 0 {
+		h.log.Error(fmt.Sprintf("%s: page or perPageCount = none", op))
+		c.JSON(http.StatusInternalServerError, errorsgeteway.ErrInvalidCredentials)
+		return
+	}
+
 	resp, err := h.grpc.GetProducts(h.ctx, &productv1.GetProductsRequest{Count: int64(req.PerPageCount)})
 	if err != nil {
 		h.log.Error(fmt.Sprintf("%s: %s", op, err))
 		c.JSON(http.StatusInternalServerError, errorsgeteway.ErrInternal)
 		return
 	}
-	c.JSON(http.StatusInternalServerError, resp)
+
+	var productList []model.GetProductResponse
+
+	for _, elem := range resp.ProductList {
+		productList = append(productList, h.giveProductModel(elem))
+	}
+
+	c.JSON(http.StatusOK, productList)
 }
 
 func (h *Handler) DeleteProduct(c *gin.Context) {
@@ -106,7 +125,7 @@ func (h *Handler) DeleteProduct(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if id < 0 || err != nil {
 		h.log.Error(fmt.Sprintf("%s: %s", op, err))
-		c.JSON(http.StatusBadRequest, gin.H{"error": errorsgeteway.ErrInvalidCredentials})
+		c.JSON(http.StatusBadRequest, errorsgeteway.ErrInvalidCredentials)
 		return
 	}
 	// message with service gRPC
@@ -120,4 +139,19 @@ func (h *Handler) DeleteProduct(c *gin.Context) {
 	h.log.Info(fmt.Sprintf("%t", resp.IsDelete))
 
 	c.JSON(http.StatusOK, resp.IsDelete)
+}
+
+// gives the structure the appearance of model.GetProductResponse
+func (h *Handler) giveProductModel(resp *productv1.GetProductResponse) model.GetProductResponse {
+	mod := model.GetProductResponse{
+		Id:          resp.GetId(),
+		ImageURL:    resp.GetImageURL(),
+		Title:       resp.GetTitle(),
+		Description: resp.GetDescription(),
+		Price:       resp.GetPrice(),
+		Currency:    string(resp.GetCurrency()),
+		Discount:    resp.GetDiscount(),
+		ProductURL:  resp.GetProductURL(),
+	}
+	return mod
 }

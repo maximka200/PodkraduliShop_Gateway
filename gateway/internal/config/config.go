@@ -9,13 +9,20 @@ import (
 )
 
 type Config struct {
-	Env     string        `mapstructure:"env"`
-	Port    string        `mapstructure:"port"`
-	Timeout time.Duration `mapstructure:"timeout"`
-	GRPC    `mapstructure:"grpc"`
+	Env         string        `mapstructure:"env"`
+	Port        string        `mapstructure:"port"`
+	Timeout     time.Duration `mapstructure:"timeout"`
+	ProductGRPC `mapstructure:"productGRPC"`
+	AuthGRPC    `mapstructure:"authGRPC"`
 }
 
-type GRPC struct {
+type ProductGRPC struct {
+	Addr       string        `mapstructure:"addr"`
+	Timeout    time.Duration `mapstructure:"timeout"`
+	RetryCount int           `mapstructure:"retryCount"`
+}
+
+type AuthGRPC struct {
 	Addr       string        `mapstructure:"addr"`
 	Timeout    time.Duration `mapstructure:"timeout"`
 	RetryCount int           `mapstructure:"retryCount"`

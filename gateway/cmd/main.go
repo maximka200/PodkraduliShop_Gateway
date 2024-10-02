@@ -23,10 +23,10 @@ func main() {
 	serv := new(server.Server)
 	log.Info(fmt.Sprintf("server run, port: %s", cfg.Port))
 	// init context
-	ctx, cancel := context.WithTimeout(context.Background(), cfg.GRPC.Timeout)
+	ctx, cancel := context.WithTimeout(context.Background(), cfg.ProductGRPC.Timeout)
 	defer cancel()
 	// init grpc client
-	grpc, err := product.NewClient(log, cfg.GRPC.Addr, cfg.GRPC.Timeout, cfg.RetryCount)
+	grpc, err := product.NewClient(log, cfg.ProductGRPC.Addr, cfg.ProductGRPC.Timeout, cfg.ProductGRPC.RetryCount)
 	if err != nil {
 		log.Error(fmt.Sprintf("cannot run grpc client: %s", err))
 		panic("cannot create grpc client")

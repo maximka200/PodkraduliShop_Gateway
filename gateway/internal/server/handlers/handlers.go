@@ -28,5 +28,12 @@ func (h *Handler) InitRouter() *gin.Engine {
 		product.DELETE("/delete/:id", h.DeleteProduct)
 	}
 
+	auth := engine.Group("/auth")
+	{
+		auth.POST("/register")
+		auth.GET("/login")
+		auth.DELETE("/delete")
+	}
+
 	return engine
 }

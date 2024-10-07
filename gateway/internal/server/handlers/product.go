@@ -22,6 +22,13 @@ type ClientMethods interface {
 	ProductMethods
 }
 
+type AuthMethod interface {
+	// stub
+	NewUser(ctx context.Context, req bool) (id int)
+	Login(ctx context.Context, req bool) (jwt string)
+	DeleteUser(ctx context.Context, req int) (isDelete bool)
+}
+
 type ProductMethods interface {
 	NewProduct(ctx context.Context, req *productv1.NewProductRequest) (*productv1.NewProductResponse, error)
 	DeleteProduct(ctx context.Context, req *productv1.DeleteProductRequest) (*productv1.DeleteProductResponse, error)

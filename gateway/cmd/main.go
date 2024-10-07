@@ -25,8 +25,8 @@ func main() {
 	// init context
 	ctx, cancel := context.WithTimeout(context.Background(), cfg.ProductGRPC.Timeout)
 	defer cancel()
-	// init grpc client
-	grpc, err := product.NewClient(log, cfg.ProductGRPC.Addr, cfg.ProductGRPC.Timeout, cfg.ProductGRPC.RetryCount)
+	// init grpc product client
+	grpc, err := product.NewClientProduct(log, cfg.ProductGRPC.Addr, cfg.ProductGRPC.Timeout, cfg.ProductGRPC.RetryCount)
 	if err != nil {
 		log.Error(fmt.Sprintf("cannot run grpc client: %s", err))
 		panic("cannot create grpc client")

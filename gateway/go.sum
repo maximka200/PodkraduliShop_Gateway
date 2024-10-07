@@ -53,6 +53,8 @@ github.com/magiconair/properties v1.8.7 h1:IeQXZAiQcpL9mgcAe1Nu6cX9LLw6ExEHKjN0V
 github.com/magiconair/properties v1.8.7/go.mod h1:Dhd985XPs7jluiymwWYZ0G4Z61jb3vdS329zhj2hYo0=
 github.com/mattn/go-isatty v0.0.20 h1:xfD0iDuEKnDkl03q4limB+vH+GxLEtL/jb4xVJSWWEY=
 github.com/mattn/go-isatty v0.0.20/go.mod h1:W+V8PltTTMOvKvAeJH7IuucS94S2C6jfK/D7dTCTo3Y=
+github.com/maximka200/buffpr v0.0.0-20240829035736-914c4a5bef26 h1:q7mnZXjZS2k8dIiK26/vT908qnMHpFAJ+4zetrr19MA=
+github.com/maximka200/buffpr v0.0.0-20240829035736-914c4a5bef26/go.mod h1:WI2b3rRYkKx/UzeRnMhTJvpxRWITNzT+UKFw4meVWbs=
 github.com/maximka200/protobuff_product v0.0.0-20240913091739-297652de0517 h1:ld6NwVyvyGVkW/PuS0JSi0EpzzaVfirQShJNid9BuE4=
 github.com/maximka200/protobuff_product v0.0.0-20240913091739-297652de0517/go.mod h1:R+xnscC32XDODsOBOZj3aF6kiFmANAsLyN35nweTV8c=
 github.com/maximka200/protobuff_product v0.0.0-20240922153947-21794790678b h1:NacPrfkabZwt0d0wq6oJN8r/Xn+PVOWzMeYquZq41Vc=

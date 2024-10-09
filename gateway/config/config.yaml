@@ -2,11 +2,11 @@ env: "local"
 port: "1808"
 timeout: 1h
 grpcProduct:
-  addr: "localhost:8080"
+  addr: "localhost:1111"
   timeout: 1h
   retryCount: 3
 grpcAuth:
-  addr: "localhost:1234"
+  addr: "localhost:8080"
   timeout: 1h
   retryCount: 3
   

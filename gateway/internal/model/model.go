@@ -10,3 +10,14 @@ type GetProductResponse struct {
 	Discount    uint32 `json:"discount"`
 	ProductURL  string `json:"producURL"`
 }
+
+type User struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	AppId    string `json:"app_id`
+}
+
+type MainPageReqParam struct {
+	Page         int `form:"page"`
+	PerPageCount int `form:"pagePerCount"`
+}

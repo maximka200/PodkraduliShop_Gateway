@@ -25,13 +25,22 @@ func main() {
 	// init context
 	ctx, cancel := context.WithTimeout(context.Background(), cfg.ProductGRPC.Timeout)
 	defer cancel()
+
 	// init grpc product client
-	grpc, err := product.NewClientProduct(log, cfg.ProductGRPC.Addr, cfg.ProductGRPC.Timeout, cfg.ProductGRPC.RetryCount)
+	grpcProduct, err := product.NewClientProduct(log, cfg.ProductGRPC.Addr, cfg.ProductGRPC.Timeout, cfg.ProductGRPC.RetryCount)
 	if err != nil {
 		log.Error(fmt.Sprintf("cannot run grpc client: %s", err))
 		panic("cannot create grpc client")
 	}
-	var grpcClient handlers.ClientMethods = grpc
+
+	grpcAuth, err := product.NewClientAuth(log, "localhost:8080", cfg.AuthGRPC.Timeout, cfg.AuthGRPC.RetryCount)
+	if err != nil {
+		log.Error(fmt.Sprintf("cannot run grpc client: %s", err))
+		panic("cannot create grpc client")
+	}
+
+	grpcMethods := product.NewGRPCMethods(*grpcAuth, *grpcProduct)
+	var grpcClient handlers.ClientMethods = grpcMethods
 	// init handler
 	handler := handlers.NewHandler(log, grpcClient, ctx)
 	go func() {

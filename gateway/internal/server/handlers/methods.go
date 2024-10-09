@@ -10,23 +10,20 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	authv1 "github.com/maximka200/buffpr/gen/go/sso"
 	productv1 "github.com/maximka200/protobuff_product/gen"
 )
 
-type MainPageReqParam struct {
-	Page         int `form:"page"`
-	PerPageCount int `form:"pagePerCount"`
-}
-
 type ClientMethods interface {
 	ProductMethods
+	AuthMethods
 }
 
-type AuthMethod interface {
-	// stub
-	NewUser(ctx context.Context, req bool) (id int)
-	Login(ctx context.Context, req bool) (jwt string)
-	DeleteUser(ctx context.Context, req int) (isDelete bool)
+type AuthMethods interface {
+	NewUser(ctx context.Context, req *authv1.RegisterRequest) (*authv1.RegisterResponse, error)
+	Login(ctx context.Context, req *authv1.LoginRequest) (*authv1.LoginResponse, error)
+	// DeleteUser(ctx context.Context, id int) (isDelete bool)
+	// проверка jwt
 }
 
 type ProductMethods interface {
@@ -65,7 +62,7 @@ func (h *Handler) GetProductById(c *gin.Context) {
 			ProductURL:  resp.ProductURL,
 		}
 	*/
-	result := h.giveProductModel(resp)
+	result := h.parseInProductModel(resp)
 
 	c.JSON(http.StatusOK, result)
 }
@@ -97,7 +94,7 @@ func (h *Handler) CreateNewProduct(c *gin.Context) {
 func (h *Handler) GetProductsList(c *gin.Context) {
 	const op = "handlers.GetProductsList"
 
-	var req MainPageReqParam
+	var req model.MainPageReqParam
 	if err := c.ShouldBind(&req); err != nil {
 		h.log.Error(fmt.Sprintf("%s: %s", op, err))
 		c.JSON(http.StatusInternalServerError, errorsgeteway.ErrInternal)
@@ -120,7 +117,7 @@ func (h *Handler) GetProductsList(c *gin.Context) {
 	var productList []model.GetProductResponse
 
 	for _, elem := range resp.ProductList {
-		productList = append(productList, h.giveProductModel(elem))
+		productList = append(productList, h.parseInProductModel(elem))
 	}
 
 	c.JSON(http.StatusOK, productList)
@@ -149,7 +146,7 @@ func (h *Handler) DeleteProduct(c *gin.Context) {
 }
 
 // gives the structure the appearance of model.GetProductResponse
-func (h *Handler) giveProductModel(resp *productv1.GetProductResponse) model.GetProductResponse {
+func (h *Handler) parseInProductModel(resp *productv1.GetProductResponse) model.GetProductResponse {
 	mod := model.GetProductResponse{
 		Id:          resp.GetId(),
 		ImageURL:    resp.GetImageURL(),
@@ -161,4 +158,52 @@ func (h *Handler) giveProductModel(resp *productv1.GetProductResponse) model.Get
 		ProductURL:  resp.GetProductURL(),
 	}
 	return mod
+}
+
+func (h *Handler) Login(c *gin.Context) {
+	const op = "handlers.Login"
+
+	var usr model.User
+	if err := c.ShouldBind(&usr); err != nil {
+		h.log.Error(fmt.Sprintf("%s: %s", op, err))
+		c.JSON(http.StatusInternalServerError, errorsgeteway.ErrInternal)
+		return
+	}
+
+	resp, err := h.grpc.Login(c.Request.Context(), &authv1.LoginRequest{Email: usr.Email,
+		Password: usr.Password})
+	if err != nil {
+		// error validation
+		h.log.Error(fmt.Sprintf("%s: %s", op, err))
+		c.JSON(http.StatusInternalServerError, errorsgeteway.ErrInternal)
+		return
+	}
+
+	h.log.Info(op)
+
+	c.JSON(http.StatusOK, resp.Token)
+}
+
+func (h *Handler) Register(c *gin.Context) {
+	const op = "handlers.Login"
+
+	var usr model.User
+	if err := c.ShouldBind(&usr); err != nil {
+		h.log.Error(fmt.Sprintf("%s: %s", op, err))
+		c.JSON(http.StatusInternalServerError, errorsgeteway.ErrInternal)
+		return
+	}
+
+	resp, err := h.grpc.NewUser(c.Request.Context(), &authv1.RegisterRequest{Email: usr.Email,
+		Password: usr.Password})
+	if err != nil {
+		// error validation
+		h.log.Error(fmt.Sprintf("%s: %s", op, err))
+		c.JSON(http.StatusInternalServerError, errorsgeteway.ErrInternal)
+		return
+	}
+
+	h.log.Info(op)
+
+	c.JSON(http.StatusOK, resp.UserId)
 }

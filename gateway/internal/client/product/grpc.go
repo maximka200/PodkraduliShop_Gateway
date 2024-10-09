@@ -24,7 +24,19 @@ type AuthClient struct {
 	Log *slog.Logger
 }
 
-func NewClientProduct(log *slog.Logger, addr string, timeout time.Duration, retryCount int) (*ProductClient, error) {
+type GRPCMethods struct {
+	AuthClient
+	ProductClient
+}
+
+func NewGRPCMethods(auth AuthClient, product ProductClient) *GRPCMethods {
+	return &GRPCMethods{
+		auth, product,
+	}
+}
+
+func NewClientProduct(log *slog.Logger, addr string,
+	timeout time.Duration, retryCount int) (*ProductClient, error) {
 	const op = "product.NewClientProduct"
 
 	retryOpts := []grpcretry.CallOption{
@@ -33,15 +45,19 @@ func NewClientProduct(log *slog.Logger, addr string, timeout time.Duration, retr
 		grpcretry.WithPerRetryTimeout(timeout),
 	}
 
-	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithUnaryInterceptor(grpcretry.UnaryClientInterceptor(retryOpts...)))
+	conn, err := grpc.NewClient(addr,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithUnaryInterceptor(grpcretry.UnaryClientInterceptor(retryOpts...)))
 	if err != nil {
 		log.Error("%s: %s", op, err)
 	}
 
-	return &ProductClient{Api: productv1.NewProductClient(conn)}, nil // insert logg if need (use InterceptorLogger)
+	return &ProductClient{Api: productv1.NewProductClient(conn)}, nil
+	// insert logg if need (use InterceptorLogger)
 }
 
-func NewClientAuth(log *slog.Logger, addr string, timeout time.Duration, retryCount int) (*AuthClient, error) {
+func NewClientAuth(log *slog.Logger, addr string,
+	timeout time.Duration, retryCount int) (*AuthClient, error) {
 	const op = "product.NewClientAuth"
 
 	retryOpts := []grpcretry.CallOption{
@@ -50,7 +66,9 @@ func NewClientAuth(log *slog.Logger, addr string, timeout time.Duration, retryCo
 		grpcretry.WithPerRetryTimeout(timeout),
 	}
 
-	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithUnaryInterceptor(grpcretry.UnaryClientInterceptor(retryOpts...)))
+	conn, err := grpc.NewClient(addr,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithUnaryInterceptor(grpcretry.UnaryClientInterceptor(retryOpts...)))
 	if err != nil {
 		log.Error("%s: %s", op, err)
 	}
@@ -60,7 +78,8 @@ func NewClientAuth(log *slog.Logger, addr string, timeout time.Duration, retryCo
 
 // InterceptorLogger adapts slog logger to interceptor logger.
 func InterceptorLogger(l *slog.Logger) grpclog.Logger {
-	return grpclog.LoggerFunc(func(ctx context.Context, lvl grpclog.Level, msg string, fields ...any) {
+	return grpclog.LoggerFunc(func(ctx context.Context,
+		lvl grpclog.Level, msg string, fields ...any) {
 		l.Log(ctx, slog.Level(lvl), msg, fields...)
 	})
 }

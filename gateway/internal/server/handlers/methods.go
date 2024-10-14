@@ -3,9 +3,9 @@ package handlers
 import (
 	"context"
 	"fmt"
-	errorsgeteway "geteway/internal/errors"
+	errorsgateway "gateway/internal/errors"
 
-	"geteway/internal/model"
+	"gateway/internal/model"
 	"net/http"
 	"strconv"
 
@@ -39,14 +39,14 @@ func (h *Handler) GetProductById(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if id < 0 || err != nil {
 		h.log.Error(fmt.Sprintf("%s: %s", op, err))
-		c.JSON(http.StatusBadRequest, errorsgeteway.ErrInvalidCredentials)
+		c.JSON(http.StatusBadRequest, errorsgateway.ErrInvalidCredentials)
 		return
 	}
 	// message with service gRPC
 	resp, err := h.grpc.GetProduct(h.ctx, &productv1.GetProductRequest{Id: int64(id)})
 	if err != nil {
 		h.log.Error(fmt.Sprintf("%s: %s", op, err))
-		c.JSON(http.StatusInternalServerError, errorsgeteway.ErrInternal)
+		c.JSON(http.StatusInternalServerError, errorsgateway.ErrInternal)
 		return
 	}
 
@@ -72,19 +72,19 @@ func (h *Handler) CreateNewProduct(c *gin.Context) {
 
 	var product productv1.NewProductRequest
 	if err := c.BindJSON(&product); err != nil {
-		c.JSON(http.StatusInternalServerError, errorsgeteway.ErrInternal)
+		c.JSON(http.StatusInternalServerError, errorsgateway.ErrInternal)
 		return
 	}
 
 	if product.Title == "" || product.Description == "" || product.Price == 0 {
 		h.log.Error(fmt.Sprintf("%s: empty field", op))
-		c.JSON(http.StatusBadRequest, errorsgeteway.ErrInvalidCredentials)
+		c.JSON(http.StatusBadRequest, errorsgateway.ErrInvalidCredentials)
 	}
 	// message with service gRPC
 	resp, err := h.grpc.NewProduct(h.ctx, &product)
 	if err != nil {
 		h.log.Error(fmt.Sprintf("%s: %s", op, err))
-		c.JSON(http.StatusInternalServerError, errorsgeteway.ErrInternal)
+		c.JSON(http.StatusInternalServerError, errorsgateway.ErrInternal)
 		return
 	}
 
@@ -97,20 +97,20 @@ func (h *Handler) GetProductsList(c *gin.Context) {
 	var req model.MainPageReqParam
 	if err := c.ShouldBind(&req); err != nil {
 		h.log.Error(fmt.Sprintf("%s: %s", op, err))
-		c.JSON(http.StatusInternalServerError, errorsgeteway.ErrInternal)
+		c.JSON(http.StatusInternalServerError, errorsgateway.ErrInternal)
 		return
 	}
 
 	if req.Page == 0 || req.PerPageCount == 0 {
 		h.log.Error(fmt.Sprintf("%s: page or perPageCount = none", op))
-		c.JSON(http.StatusInternalServerError, errorsgeteway.ErrInvalidCredentials)
+		c.JSON(http.StatusInternalServerError, errorsgateway.ErrInvalidCredentials)
 		return
 	}
 
 	resp, err := h.grpc.GetProducts(h.ctx, &productv1.GetProductsRequest{Count: int64(req.PerPageCount)})
 	if err != nil {
 		h.log.Error(fmt.Sprintf("%s: %s", op, err))
-		c.JSON(http.StatusInternalServerError, errorsgeteway.ErrInternal)
+		c.JSON(http.StatusInternalServerError, errorsgateway.ErrInternal)
 		return
 	}
 
@@ -129,14 +129,14 @@ func (h *Handler) DeleteProduct(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if id < 0 || err != nil {
 		h.log.Error(fmt.Sprintf("%s: %s", op, err))
-		c.JSON(http.StatusBadRequest, errorsgeteway.ErrInvalidCredentials)
+		c.JSON(http.StatusBadRequest, errorsgateway.ErrInvalidCredentials)
 		return
 	}
 	// message with service gRPC
 	resp, err := h.grpc.DeleteProduct(h.ctx, &productv1.DeleteProductRequest{Id: int64(id)})
 	if err != nil {
 		h.log.Error(fmt.Sprintf("%s: %s", op, err))
-		c.JSON(http.StatusInternalServerError, errorsgeteway.ErrInternal)
+		c.JSON(http.StatusInternalServerError, errorsgateway.ErrInternal)
 		return
 	}
 
@@ -166,16 +166,20 @@ func (h *Handler) Login(c *gin.Context) {
 	var usr model.User
 	if err := c.ShouldBind(&usr); err != nil {
 		h.log.Error(fmt.Sprintf("%s: %s", op, err))
-		c.JSON(http.StatusInternalServerError, errorsgeteway.ErrInternal)
+		c.JSON(http.StatusInternalServerError, errorsgateway.ErrInternal)
 		return
 	}
 
+	if usr.AppId == 0 {
+		usr.AppId = 1
+	}
+
 	resp, err := h.grpc.Login(c.Request.Context(), &authv1.LoginRequest{Email: usr.Email,
-		Password: usr.Password})
+		Password: usr.Password, AppId: int64(usr.AppId)})
 	if err != nil {
 		// error validation
 		h.log.Error(fmt.Sprintf("%s: %s", op, err))
-		c.JSON(http.StatusInternalServerError, errorsgeteway.ErrInternal)
+		c.JSON(http.StatusInternalServerError, errorsgateway.ErrInternal)
 		return
 	}
 
@@ -190,7 +194,7 @@ func (h *Handler) Register(c *gin.Context) {
 	var usr model.User
 	if err := c.ShouldBind(&usr); err != nil {
 		h.log.Error(fmt.Sprintf("%s: %s", op, err))
-		c.JSON(http.StatusInternalServerError, errorsgeteway.ErrInternal)
+		c.JSON(http.StatusInternalServerError, errorsgateway.ErrInternal)
 		return
 	}
 
@@ -199,7 +203,7 @@ func (h *Handler) Register(c *gin.Context) {
 	if err != nil {
 		// error validation
 		h.log.Error(fmt.Sprintf("%s: %s", op, err))
-		c.JSON(http.StatusInternalServerError, errorsgeteway.ErrInternal)
+		c.JSON(http.StatusInternalServerError, errorsgateway.ErrInternal)
 		return
 	}
 

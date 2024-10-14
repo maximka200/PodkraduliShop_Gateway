@@ -14,7 +14,7 @@ type GetProductResponse struct {
 type User struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
-	AppId    string `json:"app_id`
+	AppId    int    `json:"app_id"`
 }
 
 type MainPageReqParam struct {

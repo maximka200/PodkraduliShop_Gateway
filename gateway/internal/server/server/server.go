@@ -3,7 +3,7 @@ package server
 import (
 	"context"
 	"fmt"
-	"geteway/internal/config"
+	"gateway/internal/config"
 	"net/http"
 )
 

@@ -166,7 +166,7 @@ func (h *Handler) Login(c *gin.Context) {
 	var usr model.User
 	if err := c.ShouldBind(&usr); err != nil {
 		h.log.Error(fmt.Sprintf("%s: %s", op, err))
-		c.JSON(http.StatusInternalServerError, errorsgateway.ErrInternal)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": errorsgateway.ErrInternal})
 		return
 	}
 
@@ -179,7 +179,7 @@ func (h *Handler) Login(c *gin.Context) {
 	if err != nil {
 		// error validation
 		h.log.Error(fmt.Sprintf("%s: %s", op, err))
-		c.JSON(http.StatusInternalServerError, errorsgateway.ErrInternal)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": errorsgateway.ErrInternal})
 		return
 	}
 
@@ -203,7 +203,7 @@ func (h *Handler) Register(c *gin.Context) {
 	if err != nil {
 		// error validation
 		h.log.Error(fmt.Sprintf("%s: %s", op, err))
-		c.JSON(http.StatusInternalServerError, errorsgateway.ErrInternal)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": errorsgateway.ErrInternal})
 		return
 	}
 
@@ -215,16 +215,17 @@ func (h *Handler) Register(c *gin.Context) {
 func (h *Handler) VerificationJWT(c *gin.Context) {
 	const op = "handlers.VerificationJWT"
 
-	jwtToken := c.PostForm("jwt")
-	ok, err := jwt.CheckJWT(c.Request.Context(), jwtToken)
+	jwtToken := c.GetHeader("Authorization")[7:] // Bearer: = 7 symbols
+	h.log.Info(jwtToken)
+	ok, err := jwt.CheckJWT(c.Request.Context(), h.log, jwtToken)
 	if err != nil {
 		// error validation
 		h.log.Error(fmt.Sprintf("%s: %s", op, err))
-		c.JSON(http.StatusInternalServerError, errorsgateway.ErrInternal)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": errorsgateway.ErrInternal})
 		return
 	}
 
 	h.log.Info(op)
 
-	c.JSON(http.StatusOK, ok)
+	c.JSON(http.StatusOK, gin.H{"ok": ok})
 }

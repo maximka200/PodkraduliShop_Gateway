@@ -32,7 +32,7 @@ func (h *Handler) InitRouter() *gin.Engine {
 	{
 		auth.POST("/register", h.Register)
 		auth.POST("/login", h.Login)
-		auth.POST("/checkJWT", h.VerificationJWT)
+		auth.GET("/validate", h.VerificationJWT)
 		auth.DELETE("/delete")
 	}
 

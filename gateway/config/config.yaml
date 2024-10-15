@@ -9,4 +9,4 @@ grpcAuth:
   addr: "localhost:8080"
   timeout: 1h
   retryCount: 3
-  
+secretKey: "test-secret"

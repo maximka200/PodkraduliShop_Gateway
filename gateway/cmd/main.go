@@ -16,9 +16,12 @@ import (
 func main() {
 	// init config
 	cfg := config.MustReadConfig()
+	// set secret in env
+	config.SetEnvSecret(cfg.SecretKey)
 	// init logger
 	log := initLogger(cfg.Env)
 	log.Info("logger and config successfully init")
+	log.Info(os.Getenv("SECRET_KEY"))
 	// run server
 	serv := new(server.Server)
 	log.Info(fmt.Sprintf("server run, port: %s", cfg.Port))

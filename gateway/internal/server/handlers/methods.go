@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	errorsgateway "gateway/internal/errors"
+	"gateway/internal/libs/jwt"
 
 	"gateway/internal/model"
 	"net/http"
@@ -22,8 +23,7 @@ type ClientMethods interface {
 type AuthMethods interface {
 	NewUser(ctx context.Context, req *authv1.RegisterRequest) (*authv1.RegisterResponse, error)
 	Login(ctx context.Context, req *authv1.LoginRequest) (*authv1.LoginResponse, error)
-	// DeleteUser(ctx context.Context, id int) (isDelete bool)
-	// проверка jwt
+	//DeleteUser(ctx context.Context, id int) (isDelete bool)
 }
 
 type ProductMethods interface {
@@ -210,4 +210,21 @@ func (h *Handler) Register(c *gin.Context) {
 	h.log.Info(op)
 
 	c.JSON(http.StatusOK, resp.UserId)
+}
+
+func (h *Handler) VerificationJWT(c *gin.Context) {
+	const op = "handlers.VerificationJWT"
+
+	jwtToken := c.PostForm("jwt")
+	ok, err := jwt.CheckJWT(c.Request.Context(), jwtToken)
+	if err != nil {
+		// error validation
+		h.log.Error(fmt.Sprintf("%s: %s", op, err))
+		c.JSON(http.StatusInternalServerError, errorsgateway.ErrInternal)
+		return
+	}
+
+	h.log.Info(op)
+
+	c.JSON(http.StatusOK, ok)
 }

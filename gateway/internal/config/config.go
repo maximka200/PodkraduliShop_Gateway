@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"log/slog"
+	"os"
 	"time"
 
 	"github.com/spf13/viper"
@@ -14,6 +15,7 @@ type Config struct {
 	Timeout     time.Duration `mapstructure:"timeout"`
 	ProductGRPC `mapstructure:"productGRPC"`
 	AuthGRPC    `mapstructure:"authGRPC"`
+	SecretKey   string `mapstructure:"secretKey"`
 }
 
 type ProductGRPC struct {
@@ -28,6 +30,7 @@ type AuthGRPC struct {
 	RetryCount int           `mapstructure:"retryCount"`
 }
 
+// read config from ./config/
 func MustReadConfig() Config {
 	var cfg Config
 
@@ -45,4 +48,12 @@ func MustReadConfig() Config {
 	}
 
 	return cfg
+}
+
+// set SECRET_KEY env variable
+func SetEnvSecret(secret string) error {
+
+	err := os.Setenv("SECRET_KEY", secret)
+
+	return err
 }

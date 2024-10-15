@@ -3,7 +3,7 @@ package server
 import (
 	"context"
 	"fmt"
-	"geteway/internal/config"
+	"gateway/internal/config"
 	"net/http"
 )
 
@@ -14,7 +14,7 @@ type Server struct {
 func (s *Server) Run(cfg config.Config, handler http.Handler) error {
 	op := "server.Run"
 	s.httpServer = &http.Server{
-		Addr:           "172.20.10.2:" + cfg.Port,
+		Addr:           "localhost:" + cfg.Port, // 172.20.10.2
 		Handler:        handler,
 		MaxHeaderBytes: 0,
 		ReadTimeout:    cfg.Timeout,

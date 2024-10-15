@@ -30,8 +30,9 @@ func (h *Handler) InitRouter() *gin.Engine {
 
 	auth := engine.Group("/auth")
 	{
-		auth.POST("/register")
-		auth.POST("/login")
+		auth.POST("/register", h.Register)
+		auth.POST("/login", h.Login)
+		auth.GET("/validate", h.VerificationJWT)
 		auth.DELETE("/delete")
 	}
 

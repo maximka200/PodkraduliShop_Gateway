@@ -25,17 +25,19 @@ func main() {
 	serv := new(server.Server)
 	log.Info(fmt.Sprintf("server run, port: %s", cfg.Port))
 	// init context
-	ctx, cancel := context.WithTimeout(context.Background(), cfg.ProductGRPC.Timeout)
+	ctx, cancel := context.WithTimeout(context.Background(), cfg.Product.Timeout)
 	defer cancel()
 
 	// init grpc product client
-	grpcProduct, err := product.NewClientProduct(log, cfg.ProductGRPC.Addr, cfg.ProductGRPC.Timeout, cfg.ProductGRPC.RetryCount)
+	// todo debug: cannot read addres from config, ctx
+	grpcProduct, err := product.NewClientProduct(log, cfg.Product.Addr, cfg.Product.Timeout, cfg.Product.RetryCount)
 	if err != nil {
 		log.Error(fmt.Sprintf("cannot run grpc client: %s", err))
 		panic("cannot create grpc client")
 	}
 
-	grpcAuth, err := product.NewClientAuth(log, "localhost:8080", cfg.AuthGRPC.Timeout, cfg.AuthGRPC.RetryCount)
+	// todo debug: cannot read addres from config
+	grpcAuth, err := product.NewClientAuth(log, cfg.Auth.Addr, cfg.Auth.Timeout, cfg.Auth.RetryCount)
 	if err != nil {
 		log.Error(fmt.Sprintf("cannot run grpc client: %s", err))
 		panic("cannot create grpc client")

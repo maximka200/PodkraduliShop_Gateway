@@ -10,12 +10,12 @@ import (
 )
 
 type Config struct {
-	Env         string        `mapstructure:"env"`
-	Port        string        `mapstructure:"port"`
-	Timeout     time.Duration `mapstructure:"timeout"`
-	ProductGRPC `mapstructure:"productGRPC"`
-	AuthGRPC    `mapstructure:"authGRPC"`
-	SecretKey   string `mapstructure:"secretKey"`
+	Env       string        `mapstructure:"env"`
+	Port      string        `mapstructure:"port"`
+	Timeout   time.Duration `mapstructure:"timeout"`
+	Product   ProductGRPC   `mapstructure:"grpcProduct"`
+	Auth      AuthGRPC      `mapstructure:"grpcAuth"`
+	SecretKey string        `mapstructure:"secretKey"`
 }
 
 type ProductGRPC struct {
